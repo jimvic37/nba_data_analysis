@@ -1,0 +1,240 @@
+---
+title: "NBA 2017-2022 season analysis"
+output: html_notebook
+---
+
+```{r}
+# libraries used for the project
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+# get current working directory
+getwd()
+# set directory to nba_player_data.csv to read csv file
+setwd("C://Users//jimvi//OneDrive//Documents//job//Projects//nba_project_data_analysis&web_scraper//webscrapeNba")
+# reading csv file for player data through 2017-2022 season
+df_player <- read.csv("nba_player_data.csv")
+# reading csv file for team standing data through 2017-2022 season
+df_standing <- read.csv("nba_team_data.csv")
+```
+<h3> Preliminary data exploration </h3>
+```{r}
+nrow(df_player)
+ncol(df_player)
+head(df_player)
+tail(df_player)
+str(df_player)
+summary(df_player)
+```
+
+```{r}
+nrow(df_standing)
+ncol(df_standing)
+head(df_standing)
+tail(df_standing)
+str(df_standing)
+summary(df_standing)
+```
+<h3> Data cleaning/modifying</h3>
+```{r}
+df_player$X <- NULL
+df_standing$X <- NULL
+```
+```{r}
+any(is.na(df_player))
+any(duplicated(df_player))
+
+any(is.na(df_standing))
+any(duplicated(df_standing))
+```
+```{r}
+# adding EFG% 
+df_player$EFG <- round(((df_player$FGM + 0.5 * df_player$X3PM)/
+                          df_player$FGA * 100), 1)
+# adding TS% column 
+df_player$TS <- round((0.5*df_player$PTS*df_player$GP/
+                         (df_player$FGA*df_player$GP + 
+                            (0.44*df_player$FTA*df_player$GP)))*100, 1)
+# adding points per minute column
+df_player$PPM <- round(df_player$PTS/df_player$MIN, 2)
+```
+<h3> Data visualizing</h3>
+```{r}
+team_names <- c('ATL' = 'Atlanta Hawks', 'BKN' = 'Brooklyn Nets', 'BOS' = 'Boston Celtics', 'CHA' = 'Charlotte Hornets', 
+                'CHI' = 'Chicago Bulls', 'CLE' = 'Cleveland Cavaliers', 'DAL' = 'Dallas Mavericks', 'DEN' = 'Denver Nuggets', 
+                'DET' = 'Detroit Pistons', 'GSW' = 'Golden State Warriors', 'HOU' = 'Houston Rockets', 'IND' = 'Indiana Pacers', 
+                'LAC' = 'LA Clippers', 'LAL' = 'Los Angeles Lakers', 'MEM' = 'Memphis Grizzlies', 'MIA' = 'Miami Heat', 
+                'MIL' = 'Milwaukee Bucks', 'MIN' = 'Minnesota Timberwolves', 'NOP' = 'New Orleans Pelicans', 'NYK' = 'New York Knicks', 
+                'OKC' = 'Oklahoma City Thunder', 'ORL' = 'Orlando Magic', 'PHI' = 'Philadelphia 76ers', 'PHX' = 'Phoenix Suns', 
+                'POR' = 'Portland Trail Blazers', 'SAC' = 'Sacramento Kings', 'SAS' = 'San Antonio Spurs', 'TOR' = 'Toronto Raptors', 
+                'UTA' = 'Utah Jazz', 'WAS' = 'Washington Wizards')
+df_player$Team <- team_names[df_player$Team]
+```
+<h4> Creating data frame of MVP of each season</h4>
+```{r}
+
+mvp <- data.frame(
+  Season = c("2017-18", "2018-19", "2019-20", "2020-21", "2021-22"),
+  Player = c("James Harden ", "Giannis Antetokounmpo ", "Giannis Antetokounmpo "
+             , "Nikola Jokic ", "Nikola Jokic ")
+)
+```
+<h4> Merging data frame to check whether player with max efficiency won the MVP each season </h4>
+```{r}
+max_eff_by_season <- df_player %>%
+  group_by(Season) %>%
+  filter(EFF == max(EFF)) %>%
+  select(Season, Player, EFF) %>%
+  distinct()
+colnames(max_eff_by_season) <- c("Season", "Player_with_max_EFF", "EFF")
+merged_mvp_eff <- merge(max_eff_by_season, mvp, by = "Season")
+colnames(merged_mvp_eff)[4] <- "MVP"
+merged_mvp_eff
+```
+<h4> Average efficiency by team </h4>
+```{r}
+avg_EFF<- aggregate(EFF~Season + Team, df_player, FUN=mean)
+avg_EFF$EFF <- round(avg_EFF$EFF, 1)
+avg_EFF <- avg_EFF[order(avg_EFF$Season), ]
+avg_EFF
+```
+<h4> Preparing data for plotting</h4>
+```{r}
+merged_team_eff <- merge(df_standing, avg_EFF, by = c("Season", "Team"))
+merged_team_eff <- merged_team_eff[order(merged_team_eff$Season, 
+                                         merged_team_eff$Rank, 
+                                       desc(merged_team_eff$W)),]
+merged_team_eff
+
+```
+```{r}
+t <- ggplot(data=merged_team_eff)
+t + ggtitle("Average Efficiency by Team Rank 2017-2022") +
+  geom_point(aes(x=Rank, y=EFF),size=3, color="#FE6244") +
+  geom_smooth(aes(x=Rank, y=EFF), fill=NA) +
+  scale_x_continuous(breaks = seq(0, 15, by = 1)) +
+  scale_y_continuous(breaks = seq(7.5, 20, by = 2.5)) +
+  theme(axis.text.x=element_text(size=7),
+        axis.text.y=element_text(size=7),
+        plot.title = element_text(size=15, face="bold"))
+```
+<h4> Aggregated data by team field goal percentage</h4>
+```{r}
+avg_fg <- aggregate(FG.~Season + Team, df_player, FUN=mean)
+avg_fg$FG. <- round(avg_fg$FG., 1)
+avg_fg <- avg_fg[order(avg_fg$Season), ]
+avg_fg
+```
+<h4> Merged average FG. with team standing data</h4>
+```{r}
+merged_team_fg <- merge(df_standing, avg_fg, by = c("Season", "Team"))
+merged_team_fg <- merged_team_fg[order(merged_team_fg$Season, 
+                                       merged_team_fg$Rank, 
+                                       desc(merged_team_fg$W)),]
+```
+```{r}
+# plotting to see the trend between field goal percentage and rank of the team
+q <- ggplot(data=merged_team_fg)
+
+q + ggtitle("Average Field goal percentage by Team Rank 2017-2022") +
+  geom_point(aes(x=Rank, y=FG.),size=3, color="#FE6244") +
+  geom_smooth(aes(x=Rank, y=FG.), fill=NA) +
+  scale_x_continuous(breaks = seq(0, 15, by = 1)) +
+  scale_y_continuous(breaks = seq(37.5, 55, by = 2.5)) +
+  theme(axis.text.x=element_text(size=7),
+        axis.text.y=element_text(size=7),
+        plot.title = element_text(size=15, face="bold"))
+```
+<h4> Average rank by each team 2017-2022</h4>
+```{r}
+average_rank <- aggregate(Rank~Team, df_standing, FUN=mean)
+average_rank <- average_rank[order(average_rank$Rank),]
+average_rank
+```
+```{r}
+p <- ggplot(data=df_player)
+
+# if player have higher free throw attempt, are they more likely to get more points
+p + ggtitle("Free throw attempt by pts with trend line 2017-2022") +
+  geom_point(aes(x=PTS,y=FTA), colour="#FC2947") +
+  geom_smooth(aes(x=PTS,y=FTA), fill=NA, colour="#7149C6", alpha = 0.3) +
+  theme(axis.title.x=element_text(size=7),
+        axis.title.y=element_text(size=7),
+        axis.text.x=element_text(size=7),
+        axis.text.y=element_text(size=7),
+    plot.title = element_text(size=15, face="bold"))
+
+```
+```{r}
+# trend between FG. and PTS
+p + ggtitle("FG. by PTS with trend line 2017-2022") +
+  geom_point(aes(x=FG., y=PTS, colour=PTS), colour="#98DFD6", size = 2) +
+  geom_smooth(aes(x=FG., y = PTS), fill=NA) + 
+  coord_cartesian(xlim=c(34,75), ylim=c(0,40)) +
+  theme(axis.title.x=element_text(size=7),
+        axis.title.y=element_text(size=7),
+        axis.text.x=element_text(size=7),
+        axis.text.y=element_text(size=7),
+    plot.title = element_text(size=15, face="bold"))
+  
+
+```
+```{r}
+# trend between true shooting percentage and points
+p + ggtitle("TS by EFG over 2017-2022") +
+  geom_point(aes(x=TS, y=EFG), color="#7AA874") + 
+  geom_smooth(aes(x=TS, y=EFG), fill=NA) +
+  theme(axis.title.x=element_text(size=7),
+        axis.title.y=element_text(size=7),
+        axis.text.x=element_text(size=7),
+        axis.text.y=element_text(size=7),
+    plot.title = element_text(size=15, face="bold"))
+```
+```{r}
+p + ggtitle("Distribution of PPM by player 2017-2022") +
+  geom_histogram(binwidth=0.01, aes(x=PPM), fill="#9A208C",colour="#F5C6EC") +
+  theme(axis.title.x=element_text(size=7),
+        axis.title.y=element_text(size=7),
+        axis.text.x=element_text(size=7),
+        axis.text.y=element_text(size=7),
+        plot.title = element_text(size=15, face="bold"))
+```
+```{r}
+# more points more turnover and more assist?
+p + ggtitle("Scatterplot of points by AST / TOV") +
+  ylab("TOV / AST") +
+  geom_point(aes(x=PTS, y=TOV, color="TOV")) + 
+  geom_smooth(aes(x=PTS, y=TOV, color="TOV")) + 
+  geom_point(aes(x=PTS, y=AST, color="AST")) + 
+  geom_smooth(aes(x=PTS, y=AST, color="AST")) +
+  coord_cartesian(xlim=c(0,35), ylim=c(0,12)) +
+  scale_color_manual(name = "", values = c("TOV" = "#82AAE3", "AST" = "#F7DB6A")) +
+  theme(axis.title.x=element_text(size=7),
+        axis.title.y=element_text(size=7),
+        axis.text.x=element_text(size=7),
+        axis.text.y=element_text(size=7),
+        plot.title = element_text(size=15, face="bold"))
+```
+```{r}
+# player with average eff of top 20 over past 5 seasons. 
+avg_eff_by_player <- aggregate(EFF~Player, df_player,FUN=mean)
+avg_eff_by_player <- avg_eff_by_player[order(desc(avg_eff_by_player$EFF)),]
+avg_eff_by_player$EFF <- round(avg_eff_by_player$EFF,1)
+top20_eff_by_player <- head(avg_eff_by_player, 20)
+filter <- df_player$Player %in% top20_eff_by_player$Player
+top_20_players <- df_player[filter,]
+top_20_players <- top_20_players[order(top_20_players$Player),]
+top_20_players
+```
+```{r fig.width=18, fig.height=12}
+u <- ggplot(data=top_20_players)
+u + ggtitle("Top 20 players efficiency over 2017-2022 season") +
+  geom_boxplot(aes(x=Player, y =EFF, colour=Player), size=1) +
+  geom_jitter(aes(x=Player, y =EFF, colour=Player)) + 
+  ylim(18, 40) +
+  theme(axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        plot.title = element_text(size=30))
+```
