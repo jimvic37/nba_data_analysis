@@ -78,7 +78,7 @@
 
 <h3><b> Data Visualizing </b></h3>
 <hr>
-I looked at the distribution of the data and the value counts for various categorical varibales. Below are few highlight from the pivot tables.
+I have looked at the distribution of the data and the value counts for various categorical varibales. Below are few highlights from the pivot tables.
 <img src= "https://user-images.githubusercontent.com/47937864/227987578-6e803078-ec48-43b0-bf9a-a12b05b23b7f.png" width="800" height="500">
 <img src= "https://user-images.githubusercontent.com/47937864/227987743-bbd3bc88-c5c8-4e62-a2b6-c345b01bfa67.png" width="800" height="500">
 <img src= "https://user-images.githubusercontent.com/47937864/227987853-2d19ec9e-d82f-4ff9-b2df-274947550e82.png" width="800" height="500">
