@@ -4,6 +4,7 @@
 <li>Cleaned and visualized data using RStudio and R.</li>
 <li>Scraped over 1,200 NBA player stat from 2017 to 2022 season from <a href="https://nba.com/"> nba.com</a></li>
 <li>Obtained stat calculation method from <a href="https://www.nbastuffer.com/"> nbastuffer.com</a> and <a href="https://www.basketball-reference.com/"> basketball-reference.com</a></li>
+<li><a href="https://jimvic37.github.io/nba_project_data_analysis/">Deployed website</a></li>
 
 <h3><b> Code and Resources Used</b></h3>
 <hr>
