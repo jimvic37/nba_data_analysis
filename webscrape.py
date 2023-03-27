@@ -8,7 +8,7 @@ import time
 
 
 class Webscrape:
-    # initialize the class with your driver path
+    # initialize the class with your driver's path
     def __init__(self, your_driver_path):
         # specifying the driver path
         driver_path = Service(your_driver_path)
@@ -19,7 +19,7 @@ class Webscrape:
         # maximizes the windows when webdriver is opened
         self.driver.maximize_window()
 
-    # call this method in the main.py with the file path of your own and from_season, and to_season
+    # call this method in the main.py with the file path of your own and from_season and to_season
     def scrape_player(self, file_path, from_season, to_season):
         player_list = []
         counter = 1
@@ -39,7 +39,7 @@ class Webscrape:
                 time.sleep(10)
                 self.driver.find_element(By.ID, "bx-close-inside-2078917").click()
                 counter += 1
-            # closing ad for third page, there are three different random ad comes out with three different ID, so
+            # closing ad for third page, there are three different random ads that comes out with three different ID
             # used try and catch to handle NoSuchElementException
             # it takes about 10 seconds for closing ad button appears
             elif counter == 3:
@@ -104,7 +104,7 @@ class Webscrape:
                 # click the next page button only when it is enabled to prevent infinite loop
                 if next_page_button.is_enabled():
                     next_page_button.click()
-                # else no next page so end the loop
+                # else no next page and end the loop
                 else:
                     next_page = False
             # moves to the next season
