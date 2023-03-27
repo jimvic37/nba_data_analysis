@@ -1,14 +1,12 @@
 from webscrape import Webscrape
 
-your_driver_path = "C:\Development\chromedriver_win32\chromedriver.exe"
-player_file_path = r"C:\Users\jimvi\OneDrive\Documents\job\Projects\nba_project_data_analysis + web_scraper" \
-                 r"\webscrapeNba\nba_player_data.csv"
-team_file_path = r"C:\Users\jimvi\OneDrive\Documents\job\Projects\nba_project_data_analysis + web_scraper" \
-                 r"\webscrapeNba\nba_team_data.csv"
+your_driver_path = "your_driver_path"
+player_file_path = r"your_file_path_for_player_stat"
+team_file_path = r"your_file_path_for_team_stand"
 
 # put the year input as integer type
 from_season = 2017
-to_season = 2021
+to_season = 2022
 
 webscrape = Webscrape(your_driver_path)
 webscrape.scrape_player(player_file_path, from_season, to_season)
