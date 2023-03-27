@@ -55,7 +55,7 @@
 <h3><b> Data Cleaning </b></h3>
 <hr>
 <li>Checked for missing values and duplicates</li>
-<li>Dropped unecessary columns</li>
+<li>Dropped unnecessary rows and columns</li>
 
 <h3><b> Data Modifying </b></h3>
 <hr>
